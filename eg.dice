@@ -1,10 +1,9 @@
-let x_0_0 : int(7) = discrete(0.5, 0.5, 0, 0, 0, 0, 0) in
-let x_1_0 : int(7) = discrete(0.5, 0.5, 0, 0, 0, 0, 0) in
-let x_0_1 : int(7) = discrete(0.5, 0.5, 0, 0, 0, 0, 0) in
-let x_1_1 : int(7) = discrete(0.5, 0.5, 0, 0, 0, 0, 0) in
-let x_0_2 : int(7) = discrete(0.5, 0.5, 0, 0, 0, 0, 0) in
-let x_1_2 : int(7) = discrete(0.5, 0.5, 0, 0, 0, 0, 0) in
-let _ : bool = observe(x_0_0 + x_1_0 + x_0_1 + x_1_1 + x_0_2 + x_1_2 == 2) in
-let _ : bool = observe(x_0_1 + x_0_2 + x_1_1 == 1) in
-let _ : bool = observe(x_1_2 == 0) in
+let x_0_0 = discrete(0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0) in
+let x_1_0 = discrete(0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0) in
+let x_0_1 = discrete(0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0) in
+let x_1_1 = discrete(0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0) in
+let x_0_2 = discrete(0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0) in
+let x_1_2 = discrete(0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0) in
+let o_n_mines = observe (x_0_0 + x_1_0 + x_0_1 + x_1_1 + x_0_2 + x_1_2 == int(7, 2)) in
+let o_1 = observe(x_0_1 + x_0_2 + x_1_1 == int(7, 1) && x_1_2 == int(7, 0)) in
 (x_0_0, (x_1_0, (x_0_1, (x_1_1, (x_0_2, x_1_2)))))
