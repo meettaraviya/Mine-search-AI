@@ -11,5 +11,5 @@ parser.add_argument('height', metavar='H', type=int,
 
 
 args = parser.parse_args()
-N, W, H = args.count, args.width, args.height
+N, H, W = args.count, args.height, args.width
 
