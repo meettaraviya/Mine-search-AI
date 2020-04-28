@@ -165,8 +165,8 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-mlcuddidil
-dice
-minez*
-BeMines
-bin
+/mlcuddidil
+/dice
+/minez*
+/BeMines
+/bin
