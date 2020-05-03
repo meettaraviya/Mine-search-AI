@@ -10,6 +10,12 @@ class MineSweeper:
     def __init__(self, N: int, H: int, W: int, seed: int = None):
 
         self.N, self.H, self.W = N, H, W
+        
+        if seed is None:
+            seed = np.random.randint(2**32)
+
+        np.random.seed(seed)
+        self.seed = seed
 
         locs = np.random.choice(H*W, N, False)
         self.__field = np.zeros(H*W, dtype=bool)
@@ -19,6 +25,7 @@ class MineSweeper:
         self.revealed = np.zeros((H, W), dtype=bool)
 
         self.__counts = (ss.convolve2d(self.__field, np.ones((3, 3)), mode='same') - self.__field).astype(int)
+
 
     @staticmethod
     def beginner(seed: int = None):
@@ -89,6 +96,16 @@ class MineSweeper:
             out += "|\n"
 
         return out
+
+    def neighbors(self, i:int, j:int):
+        nbrs = []
+
+        for di in [-1, 0, 1]:
+            for dj in [-1, 0, 1]:
+                if 0 <= i + di < self.H and 0 <= j + dj < self.W and (di != 0 or dj != 0):
+                    nbrs.append((i + di, j + dj))
+
+        return nbrs
 
     def print(self, outfile: str = None):
 
