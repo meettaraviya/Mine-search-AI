@@ -1,0 +1,24 @@
+0.5::tile(0,D); 0.5::tile(1,D) :- x(D).
+
+x(1).
+x(2).
+x(3).
+x(4).
+x(5).
+x(6).
+
+
+sum :- tile(A,1), tile(B,2), tile(C,3), tile(D,4), tile(E,5), tile(F,6), 2 is A+B+C+D+E+F.
+summ :- tile(C,3), tile(D,4), tile(E,5), 1 is C+D+E.
+summm :- tile(A, 6), 0 is A.
+result(S) :- tile(A, S), 1 is A.
+
+evidence(sum,true).
+evidence(summ,true).
+evidence(summm, 0).
+query(result(1)).
+query(result(2)).
+query(result(3)).
+query(result(4)).
+query(result(5)).
+query(result(6)).
