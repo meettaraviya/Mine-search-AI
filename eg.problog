@@ -1,11 +1,11 @@
-0.5::tile(0,D); 0.5::tile(1,D) :- x(D).
+0.5::tile(0,D); 0.5::tile(1,D) :- tile(D).
 
-x(1).
-x(2).
-x(3).
-x(4).
-x(5).
-x(6).
+tile(1).
+tile(2).
+tile(3).
+tile(4).
+tile(5).
+tile(6).
 
 
 sum :- tile(A,1), tile(B,2), tile(C,3), tile(D,4), tile(E,5), tile(F,6), 2 is A+B+C+D+E+F.
