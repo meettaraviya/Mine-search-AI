@@ -70,9 +70,10 @@ call_id_dict = {}
 def to_probs_dice(ms: MineSweeper):
 	call_id = call_id_dict.get(ms.seed, 0)
 	probs = np.zeros((ms.H, ms.W))
-
+	print()
 	for i in range(ms.H):
 		for j in range(ms.W):
+			# print(" . ", end="")
 
 			if not ms.revealed[i, j]:
 			
@@ -90,6 +91,7 @@ def to_probs_dice(ms: MineSweeper):
 
 				call_id += 1
 
+		# print()
 	call_id_dict[ms.seed] = call_id
 	return probs # return probabilities of having a mine
 
@@ -113,6 +115,9 @@ if __name__ == '__main__':
 	n_won = 0
 
 	for seed in range(args.game_count):
+		print(f"\n-"+"------"*W+"\n")
+		print(f"GAME #{seed+1}")
+		print(f"\n-"+"------"*W+"\n")
 		ms = MineSweeper(N, H, W, seed=seed)
 		result = player.play(ms, debug=True)
 
