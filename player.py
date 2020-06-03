@@ -64,10 +64,12 @@ class GreedyPlayer(Player):
                 print("BOOM!! GAME OVER.")
                 print()
                 print(f"Number of safe places left = {n_safe_left}")
+                print(f"Score = {ms.W*ms.H-ms.N-n_safe_left}")
                 return False
 
             else:
                 print("AI WINS!")
+                print(f"Score = {ms.W*ms.H-ms.N-n_safe_left}")
                 return True
 
 
@@ -132,16 +134,22 @@ class OptimizedGreedyPlayer(Player):
 
                 n_safe_left -= 1
 
+        score = ms.W*ms.H-ms.N-n_safe_left
+        
         if debug:
             print("Final game grid:\n")
             ms.print()
 
-            if prev_square == "@":
+        if prev_square == "@":
+            if debug:
                 print("BOOM!! GAME OVER.")
                 print()
                 print(f"Number of safe places left = {n_safe_left}")
-                return False
+                print(f"Score = {score}")
+            return False, score
 
-            else:
+        else:
+            if debug:
                 print("AI WINS!")
-                return True
+                print(f"Score = {score}")
+            return True, score
