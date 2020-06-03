@@ -104,6 +104,7 @@ if __name__ == '__main__':
 	parser.add_argument('height', metavar='H', type=int, help='Minefield height.')
 	parser.add_argument('--game_count', metavar='G', type=int, help='Number of games.', default=1)
 	parser.add_argument('--player', type=str, help="Player's algorithm.", choices=["GreedyPlayer", "OptimizedGreedyPlayer"], default="OptimizedGreedyPlayer")
+	parser.add_argument('--seed', type=int, help="Seed for RNG.", default=np.random.randint(100))
 
 
 	args = parser.parse_args()
@@ -114,11 +115,13 @@ if __name__ == '__main__':
 
 	n_won = 0
 
-	for seed in range(args.game_count):
+	np.random.seed(args.seed)
+
+	for game_id in range(args.game_count):
 		print(f"\n-"+"------"*W+"\n")
-		print(f"GAME #{seed+1}")
+		print(f"GAME #{game_id+1}")
 		print(f"\n-"+"------"*W+"\n")
-		ms = MineSweeper(N, H, W, seed=seed)
+		ms = MineSweeper(N, H, W)
 		result = player.play(ms, debug=True)
 
 		n_won += result
