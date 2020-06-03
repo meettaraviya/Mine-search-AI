@@ -21,10 +21,6 @@ class GreedyPlayer(Player):
 
         for n_safe_left in range(ms.H*ms.W-ms.N, 0, -1):
 
-            if prev_square == "@":
-                n_safe_left += 1
-                break
-
             if debug:
                 print(f"Safe spots left: {n_safe_left}\n")
                 print("Game grid:\n")
@@ -57,6 +53,9 @@ class GreedyPlayer(Player):
 
             prev_square = ms.reveal(mi, mj)
 
+            if prev_square == "@":
+                break
+
         if debug:
             print("Final game grid:\n")
             ms.print()
@@ -65,17 +64,19 @@ class GreedyPlayer(Player):
                 print("BOOM!! GAME OVER.")
                 print()
                 print(f"Number of safe places left = {n_safe_left}")
+                print(f"Score = {ms.W*ms.H-ms.N-n_safe_left}")
                 return False
 
             else:
                 print("AI WINS!")
+                print(f"Score = {ms.W*ms.H-ms.N-n_safe_left}")
                 return True
-
 
 
 class OptimizedGreedyPlayer(Player):
     """For each move, calculate the distribution and make the move corresponding to the position with minimum probability of having a mine"""
     """If there are locations with probability zero, reveal all of them one by one"""
+
     def play(self, ms: MineSweeper, debug: bool = False):
 
         prev_square = None
@@ -121,7 +122,6 @@ class OptimizedGreedyPlayer(Player):
             else:
                 moves = [(mi, mj)]
 
-
             if debug:
                 print(f"Moves = {moves}")
                 print("\n-" + "------"*ms.W+"\n")
@@ -129,18 +129,27 @@ class OptimizedGreedyPlayer(Player):
             for i, j in moves:
                 prev_square = ms.reveal(i, j)
 
-            n_safe_left -= len(moves)
+                if prev_square == "@":
+                    break
 
+                n_safe_left -= 1
+
+        score = ms.W*ms.H-ms.N-n_safe_left
+        
         if debug:
             print("Final game grid:\n")
             ms.print()
 
-            if prev_square == "@":
+        if prev_square == "@":
+            if debug:
                 print("BOOM!! GAME OVER.")
                 print()
                 print(f"Number of safe places left = {n_safe_left}")
-                return False
+                print(f"Score = {score}")
+            return False, score
 
-            else:
+        else:
+            if debug:
                 print("AI WINS!")
-                return True
+                print(f"Score = {score}")
+            return True, score
