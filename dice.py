@@ -1,4 +1,4 @@
-from minesweeper import MineSweeper
+from minesweeper import MineSweeper, WindowsMineSweeper
 from player import GreedyPlayer, OptimizedGreedyPlayer
 
 import numpy as np
@@ -19,87 +19,91 @@ fun sum8(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool, g: bool, h: bool)
 
 """
 
-# def to_program_dice(ms: MineSweeper, outvar: str, outfile:str = None):
+def to_program_dice(ms: MineSweeper, outvar: str, outfile:str = None):
 
-# 	INT_MAX = ms.N + 2
+	INT_MAX = ms.N + 2
 
-# 	program = helper_funcs_f.replace("INT_MAX", str(INT_MAX))
-# 	# var_names = ""
+	program = helper_funcs_f.replace("INT_MAX", str(INT_MAX))
+	# var_names = ""
 
-# 	prev = None
+	prev = None
 
-# 	for i in range(ms.H):
-# 		for j in range(ms.W):
-# 			program += f"let x_{i}_{j} = flip(0.5) in\n"
+	# for i in range(ms.H):
+	# 	for j in range(ms.W):
+	# 		program += f"let x_{i}_{j} = flip(0.5) in\n"
 
-# 			if prev is None:
-# 				program += f"let count_{i}_{j} = if x_{i}_{j} then int({INT_MAX}, 1) else int({INT_MAX}, 0) in\n"
+	for i in range(ms.H):
+		for j in range(ms.W):
+			program += f"let x_{i}_{j} = flip(0.5) in\n"
+
+			if prev is None:
+				program += f"let count_{i}_{j} = if x_{i}_{j} then int({INT_MAX}, 1) else int({INT_MAX}, 0) in\n"
 				
-# 			else:
-# 				program += f"let count_{i}_{j} = if x_{i}_{j} then count_{prev[0]}_{prev[1]} + int({INT_MAX}, 1) else count_{prev[0]}_{prev[1]} in\n"
+			else:
+				program += f"let count_{i}_{j} = if x_{i}_{j} then count_{prev[0]}_{prev[1]} + int({INT_MAX}, 1) else count_{prev[0]}_{prev[1]} in\n"
 
-# 			program += f"let _ = observe(count_{i}_{j} != int({INT_MAX}, {INT_MAX-1})) in\n"
+			program += f"let _ = observe(count_{i}_{j} != int({INT_MAX}, {INT_MAX-1})) in\n"
 
-# 			prev = i, j
+			prev = i, j
 
-# 	for i in range(ms.H):
-# 		for j in range(ms.W):
-# 			if ms.revealed[i, j]:
-# 				nbrs = ms.neighbors(i, j)
-# 				func = f"sum{len(nbrs)}"
-# 				func_args = ", ".join([f"x_{ni}_{nj}" for ni, nj in nbrs])
+	for i in range(ms.H):
+		for j in range(ms.W):
+			if ms.revealed[i, j]:
+				nbrs = ms.neighbors(i, j)
+				func = f"sum{len(nbrs)}"
+				func_args = ", ".join([f"x_{ni}_{nj}" for ni, nj in nbrs])
 
-# 				count = int(ms.get(i, j))
+				count = int(ms.get(i, j))
 
-# 				program += f"let _ = observe({func}({func_args}) == int({INT_MAX}, {count})) in\n"
-#				program += f"let _ = observe(!x_{i}_{j}) in\n"
+				program += f"let _ = observe({func}({func_args}) == int({INT_MAX}, {count})) in\n"
+				program += f"let _ = observe(!x_{i}_{j}) in\n"
 
-# 	program += f"let _ = observe(count_{ms.H-1}_{ms.W-1} == int({INT_MAX}, {ms.N})) in\n"
-
-
-# 	program += f"{outvar}\n"
-
-# 	if outfile is None:
-# 		print(program)
-
-# 	else:
-# 		with open(outfile, 'w') as out:
-# 			out.write(program)
+	program += f"let _ = observe(count_{ms.H-1}_{ms.W-1} == int({INT_MAX}, {ms.N})) in\n"
 
 
-# call_id_dict = {}
+	program += f"{outvar}\n"
 
-# def to_probs_dice(ms: MineSweeper):
-# 	call_id = call_id_dict.get(ms.seed, 0)
-# 	probs = np.zeros((ms.H, ms.W))
-# 	print()
-# 	for i in range(ms.H):
-# 		for j in range(ms.W):
-# 			# print(" . ", end="")
+	if outfile is None:
+		print(program)
 
-# 			if not ms.revealed[i, j]:
-			
-# 				fieldfile = f"programs/dice/ms_{ms.seed}_{call_id}.ml"
-# 				codefile = f"programs/dice/ms_{ms.seed}_{call_id}.ml"
-				
-# 				to_program_dice(ms, f"x_{i}_{j}", outfile=codefile)
-# 				output = os.popen(f"bin/Dice.native {codefile}").read()
-# 				try:
-# 					prob = float(output.split("\n")[2].split("\t")[1])
-# 				except Exception:
-# 					print(f"Cannot parse output of dice when run on {codefile}.")
-# 					exit(1)
-# 				probs[i, j] = prob
+	else:
+		with open(outfile, 'w') as out:
+			out.write(program)
 
-# 				call_id += 1
-
-# 		# print()
-# 	call_id_dict[ms.seed] = call_id
-# 	return probs # return probabilities of having a mine
 
 call_id_dict = {}
 
 def to_probs_dice(ms: MineSweeper):
+	call_id = call_id_dict.get(ms.seed, 0)
+	probs = np.zeros((ms.H, ms.W))
+	print()
+	for i in range(ms.H):
+		for j in range(ms.W):
+			# print(" . ", end="")
+
+			if not ms.revealed[i, j]:
+			
+				fieldfile = f"programs/dice/ms_{ms.seed}_{call_id}.ml"
+				codefile = f"programs/dice/ms_{ms.seed}_{call_id}.ml"
+				
+				to_program_dice(ms, f"x_{i}_{j}", outfile=codefile)
+				output = os.popen(f"bin/Dice.native {codefile}").read()
+				try:
+					prob = float(output.split("\n")[1].split("\t")[1])
+				except Exception:
+					print(f"Cannot parse output of dice when run on {codefile}.")
+					exit(1)
+				probs[i, j] = prob
+
+				call_id += 1
+
+		# print()
+	call_id_dict[ms.seed] = call_id
+	return probs # return probabilities of having a mine
+
+call_id_dict = {}
+
+def to_probs_dice_optimized(ms: MineSweeper):
 
 	INT_MAX = ms.N + 2
 
@@ -113,6 +117,10 @@ def to_probs_dice(ms: MineSweeper):
 	for i in range(ms.H):
 		for j in range(ms.W):
 			program += f"let x_{i}_{j} = flip(0.5) in\n"
+
+	for i in range(ms.H):
+		for j in range(ms.W):
+			# program += f"let x_{i}_{j} = flip(0.5) in\n"
 			program += f"let count = if x_{i}_{j} then count + int({INT_MAX}, 1) else count in\n"
 			program += f"let _ = observe(count != int({INT_MAX}, {INT_MAX-1})) in\n"
 
@@ -180,27 +188,29 @@ if __name__ == '__main__':
 	N, H, W = args.mine_count, args.height, args.width
 	
 	Player = globals()[args.player]
-	player = Player(to_probs_dice)
+	# player = Player(to_probs_dice)
+	player = Player(to_probs_dice_optimized)
 
 	n_won = 0
 
 	np.random.seed(args.seed)
 
 	scores = []
-	start_time = time.process_time()
+	start_time = time.time()
 
 	for game_id in range(args.game_count):
 		print(f"\n-"+"------"*W+"\n")
 		print(f"GAME #{game_id+1}")
 		print(f"\n-"+"------"*W+"\n")
 
-		ms = MineSweeper(N, H, W)
+		ms = WindowsMineSweeper(N, H, W)
+		# ms = MineSweeper(N, H, W)
 		result, score = player.play(ms, debug=True)
 
 		n_won += result
 		scores.append(score)
 
-	end_time = time.process_time()
+	end_time = time.time()
 
 
 	print(f"\n-"+"------"*W+"\n")

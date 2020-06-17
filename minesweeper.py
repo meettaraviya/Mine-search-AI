@@ -18,13 +18,17 @@ class MineSweeper:
         self.seed = seed
 
         locs = np.random.choice(H*W, N, False)
-        self.__field = np.zeros(H*W, dtype=bool)
-        self.__field[locs] = True
-        self.__field = self.__field.reshape(H, W)
+        self.field = np.zeros(H*W, dtype=bool)
+        self.field[locs] = True
+        self.field = self.field.reshape(H, W)
 
         self.revealed = np.zeros((H, W), dtype=bool)
 
-        self.__counts = (ss.convolve2d(self.__field, np.ones((3, 3)), mode='same') - self.__field).astype(int)
+        self.counts = (ss.convolve2d(self.field, np.ones((3, 3)), mode='same') - self.field).astype(int)
+
+        self.game_over = False
+
+        self.score = 0
 
 
     @staticmethod
@@ -70,19 +74,19 @@ class MineSweeper:
                         given_counts[-1].append(None)
 
         ms = MineSweeper.__new__(MineSweeper)
-        ms.__field = np.array(field).astype(bool)
-        ms.N = ms.__field.sum()
-        ms.H, ms.W = ms.__field.shape
+        ms.field = np.array(field).astype(bool)
+        ms.N = ms.field.sum()
+        ms.H, ms.W = ms.field.shape
 
-        ms.revealed = np.array(revealed)
+        ms.revealed = np.array(revealed).astype(bool)
 
-        calc_counts = (ss.convolve2d(ms.__field, np.ones((3, 3)), mode='same') - ms.__field).astype(int)
+        calc_counts = (ss.convolve2d(ms.field, np.ones((3, 3)), mode='same') - ms.field).astype(int)
 
-        if validate:
-            assert ((calc_counts == given_counts) | np.equal(given_counts, None)).all(), "Invalid field"
-            assert (ms.__field & ms.revealed).sum() <= 1, "More than one mines clicked on"
+        # if validate:
+        #     assert ((calc_counts == given_counts) | np.equal(given_counts, None)).all(), "Invalid field"
+        #     assert (ms.field & ms.revealed).sum() <= 1, "More than one mines clicked on"
 
-        ms.__counts = calc_counts
+        ms.counts = calc_counts
 
         return ms
 
@@ -118,10 +122,10 @@ class MineSweeper:
 
     def get(self, y: int, x: int):
         if self.revealed[y, x]:
-            if self.__field[y, x]:
+            if self.field[y, x]:
                 return "@"
             else:
-                return str(self.__counts[y, x])
+                return str(self.counts[y, x])
         else:
             return " "
 
@@ -132,12 +136,15 @@ class MineSweeper:
             for j in range(self.W):
                 if not self.revealed[i][j]:
                     k = 0
-                elif self.__field[i][j]:
+                elif self.field[i][j]:
                     k = 4
                 else:
-                    k = 15 - self.__counts[i][j]
+                    k = 13 - self.counts[i][j]
 
                 img[i*16:(i+1)*16, j*16:(j+1)*16, :] = MineSweeper.ICONS[k*16:(k+1)*16, :, :]
+        
+        print(img.shape, self.H, self.W)   
+        
 
         if outfile is None:
             Image.fromarray(img).show()
@@ -147,7 +154,52 @@ class MineSweeper:
 
     def reveal(self, y: int, x: int):
         self.revealed[y, x] = True
-        return self.get(y, x)
+        val = self.get(y, x)
+
+        if val == "@":
+            self.game_over = True
+
+        if not self.game_over:
+            self.score += 1
+
+        return val
+
+
+class WindowsMineSweeper(MineSweeper):
+    """docstring for WindowsMineSweeper"""
+    def __init__(self, *args, **kwargs):
+        super(WindowsMineSweeper, self).__init__(*args, **kwargs)
+
+        self.first_move = True
+        
+    def reveal(self, y: int, x: int):
+
+        if self.first_move:
+            while self.field[y, x]:
+                locs = np.random.choice(self.H*self.W, self.N, False)
+                self.field = np.zeros(self.H*self.W, dtype=bool)
+                self.field[locs] = True
+                self.field = self.field.reshape(self.H, self.W)
+
+            self.counts = (ss.convolve2d(self.field, np.ones((3, 3)), mode='same') - self.field).astype(int)
+
+            self.first_move = False
+
+        self.revealed[y, x] = True
+        val = self.get(y, x)
+
+        if val == "@":
+            self.game_over = True
+        
+        elif val == "0":
+            for ny, nx in self.neighbors(y, x):
+                if not self.revealed[ny, nx]:
+                    self.reveal(ny, nx)
+
+        if not self.game_over:
+            self.score += 1
+
+        return val
 
 
 if __name__ == '__main__':

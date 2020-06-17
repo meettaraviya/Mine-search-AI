@@ -81,12 +81,12 @@ class OptimizedGreedyPlayer(Player):
 
         prev_square = None
 
-        n_safe_left = ms.H*ms.W - ms.N
+        max_score = ms.H * ms.W - ms.N
 
-        while n_safe_left > 0 and prev_square != "@":
+        while ms.score < max_score and not ms.game_over:
 
             if debug:
-                print(f"Safe spots left: {n_safe_left}\n")
+                print(f"Score: {ms.score}\n")
                 print("Game grid:\n")
                 ms.print()
 
@@ -129,27 +129,25 @@ class OptimizedGreedyPlayer(Player):
             for i, j in moves:
                 prev_square = ms.reveal(i, j)
 
-                if prev_square == "@":
+                if ms.game_over:
                     break
 
-                n_safe_left -= 1
 
-        score = ms.W*ms.H-ms.N-n_safe_left
+
         
         if debug:
             print("Final game grid:\n")
             ms.print()
 
-        if prev_square == "@":
+        if ms.game_over:
             if debug:
                 print("BOOM!! GAME OVER.")
                 print()
-                print(f"Number of safe places left = {n_safe_left}")
-                print(f"Score = {score}")
-            return False, score
+                print(f"Score = {ms.score}")
+            return False, ms.score
 
         else:
             if debug:
                 print("AI WINS!")
-                print(f"Score = {score}")
-            return True, score
+                print(f"Score = {ms.score}")
+            return True, ms.score
