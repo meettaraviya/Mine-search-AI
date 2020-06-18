@@ -199,7 +199,7 @@ if __name__ == '__main__':
 	elif args.variant == "windows":
 		Variant = WindowsMineSweeper
 
-	player = Player(to_probs_dice)
+	player = Player(to_probs_dice_optimized)
 
 	n_won = 0
 

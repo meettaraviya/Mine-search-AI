@@ -1,4 +1,4 @@
-from minesweeper import MineSweeper
+from minesweeper import MineSweeper, WindowsMineSweeper
 from player import GreedyPlayer, OptimizedGreedyPlayer
 
 import numpy as np
@@ -7,7 +7,7 @@ import os
 import time
 import board_net
 
-def write_to_xml(N_evidence, X_evidence, C_evidence, query, outfile):
+def to_evidence_ace(N_evidence, X_evidence, C_evidence, query, outfile):
 	with open(outfile, "w") as f1:
 		f1.write('<?xml version="1.0" encoding="UTF-8"?>\n')
 		f1.write('<instantiation date="Jun 4, 2005 7:07:21 AM">\n')
@@ -27,8 +27,11 @@ def write_to_xml(N_evidence, X_evidence, C_evidence, query, outfile):
 	#with open(outfile, "r") as f2:
 	#	print(f2.read())
 
-def ace_get_probabilities(ms: MineSweeper):
+from board_net import *
+
+def to_probs_ace(ms: MineSweeper):
 	outfile = "bayes_net/minesweeper.inst"
+
 	probs = np.zeros((ms.H, ms.W))
 	N_evidence = {}
 	X_evidence = {}
@@ -48,8 +51,8 @@ def ace_get_probabilities(ms: MineSweeper):
 			if not ms.revealed[i, j]:
 				query_var_name = "X_" + str(i) + "_" + str(j)
 				query = {query_var_name:1}
-				write_to_xml(N_evidence, X_evidence, C_evidence, query, outfile)
-				command = 'bin/evaluate ' + 'bayes_net/minesweeper.net ' + outfile
+				to_evidence_ace(N_evidence, X_evidence, C_evidence, query, outfile)
+				command = 'ace/evaluate ' + 'bayes_net/minesweeper.net ' + outfile
 				#print(command)
 				stream = os.popen(command)
 				stream = stream.readlines()
@@ -60,49 +63,61 @@ def ace_get_probabilities(ms: MineSweeper):
 
 
 
-
 if __name__ == '__main__':
 
-        parser = argparse.ArgumentParser(description='Solve MineSweeper using DICE.')
-        parser.add_argument('mine_count', metavar='N', type=int, help='Number of mines.')
-        parser.add_argument('width', metavar='W', type=int, help='Minefield width.')
-        parser.add_argument('height', metavar='H', type=int, help='Minefield height.')
-        parser.add_argument('--game_count', metavar='G', type=int, help='Number of games.', default=1)
-        parser.add_argument('--player', type=str, help="Player's algorithm.", choices=["GreedyPlayer", "OptimizedGreedyPlayer"], default="OptimizedGreedyPlayer")
-        parser.add_argument('--seed', type=int, help="Seed for RNG.", default=np.random.randint(100))
+	parser = argparse.ArgumentParser(description='Solve MineSweeper using DICE.')
+	parser.add_argument('mine_count', metavar='N', type=int, help='Number of mines.')
+	parser.add_argument('width', metavar='W', type=int, help='Minefield width.')
+	parser.add_argument('height', metavar='H', type=int, help='Minefield height.')
+	parser.add_argument('--game_count', metavar='G', type=int, help='Number of games.', default=1)
+	parser.add_argument('--player', type=str, help="Player's algorithm.", choices=["greedy", "optimized_greedy"], default="optimized_greedy")
+	parser.add_argument('--seed', type=int, help="Seed for RNG.", default=np.random.randint(100))
+	parser.add_argument('--variant', type=str, help="Game variant.", default="simple", choices=["windows", "simple"])
 
 
-        args = parser.parse_args()
-        N, H, W = args.mine_count, args.height, args.width
+	args = parser.parse_args()
+	N, H, W = args.mine_count, args.height, args.width
+	
+	# Player = globals()[args.player]
+	if args.player == "greedy":
+		Player = GreedyPlayer
+	elif args.player == "optimized_greedy":
+		Player = OptimizedGreedyPlayer
 
-        board_net.draw_network(H, W, N, "bayes_net/minesweeper.net")
-        os.system("bin/compile bayes_net/minesweeper.net")
+	if args.variant == "simple":
+		Variant = MineSweeper
+	elif args.variant == "windows":
+		Variant = WindowsMineSweeper
 
-        Player = globals()[args.player]
-        player = Player(ace_get_probabilities)
+	player = Player(to_probs_ace)
 
-        n_won = 0
+	n_won = 0
 
-        np.random.seed(args.seed)
+	np.random.seed(args.seed)
 
-        scores = []
-        start_time = time.time()
+	scores = []
+	start_time = time.time()
 
-        for game_id in range(args.game_count):
-                print(f"\n-"+"------"*W+"\n")
-                print(f"GAME #{game_id+1}")
-                print(f"\n-"+"------"*W+"\n")
+	bn_file = 'bayes_net/minesweeper.net'
+	draw_network(H, W, N, bn_file)
+	os.system(f"ace/compile {bn_file}")
 
-                ms = MineSweeper(N, H, W)
-                result, score = player.play(ms, debug=True)
+	for game_id in range(args.game_count):
+		print(f"\n-"+"------"*W+"\n")
+		print(f"GAME #{game_id+1}")
+		print(f"\n-"+"------"*W+"\n")
 
-                n_won += result
-                scores.append(score)
+		ms = Variant(N, H, W)
+		# ms = MineSweeper(N, H, W)
+		result, score = player.play(ms, debug=True)
 
-        end_time = time.time()
+		n_won += result
+		scores.append(score)
+
+	end_time = time.time()
 
 
-        print(f"\n-"+"------"*W+"\n")
-        print(f"\nAI won {n_won}/{args.game_count} games.")
-        print(f"\nAverage score: {np.mean(scores):.2f}.")
-        print(f"\nAverage time taken: {(end_time - start_time)/args.game_count} seconds.")
+	print(f"\n-"+"------"*W+"\n")
+	print(f"\nAI won {n_won}/{args.game_count} games.")
+	print(f"\nAverage score: {np.mean(scores):.2f}.")
+	print(f"\nAverage time taken: {(end_time - start_time)/args.game_count} seconds.")

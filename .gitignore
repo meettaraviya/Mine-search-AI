@@ -173,3 +173,12 @@ cython_debug/
 /bin
 /programs
 codebullet/
+
+ace/
+plot_data/
+bayes_net/
+experiments/
+*.problog
+*.out
+*.txt
+plot_data.tar.gz

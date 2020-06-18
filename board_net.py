@@ -27,7 +27,7 @@ def recursive(values):
 		return string
 
 
-def draw_network(H: int, Wminesweeper.net: int, mines:int, network_file):
+def draw_network(H: int, W: int, mines:int, network_file):
 	X = []
 	X_dict = {}
 	X_states = [0,1]
